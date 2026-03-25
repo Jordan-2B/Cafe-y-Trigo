@@ -1,0 +1,61 @@
+{
+  "gastos": [
+    {
+      "id": 1773263751831,
+      "fecha": "11/3/2026, 4:15:51 p. m.",
+      "monto": 1000,
+      "categoria": "Granos",
+      "concepto": "fff",
+      "usuario": "Administrador"
+    },
+    {
+      "id": 1773263784227,
+      "fecha": "11/3/2026, 4:16:24 p. m.",
+      "monto": 100000,
+      "categoria": "Granos",
+      "concepto": "cafe",
+      "usuario": "Administrador"
+    },
+    {
+      "id": 1773269109606,
+      "fecha": "11/3/2026, 5:45:09 p. m.",
+      "monto": 10000000,
+      "categoria": "Lácteos",
+      "concepto": "leche ",
+      "usuario": "Administrador"
+    },
+    {
+      "id": 1773269221540,
+      "fecha": "11/3/2026, 5:47:01 p. m.",
+      "monto": 1000000,
+      "categoria": "Servicios",
+      "concepto": "Maquina dañada ",
+      "usuario": "Administrador"
+    },
+    {
+      "id": 1773269281427,
+      "fecha": "11/3/2026, 5:48:01 p. m.",
+      "monto": 1000000,
+      "categoria": "Panadería",
+      "concepto": "Azúcar ",
+      "usuario": "Trabajador"
+    },
+    {
+      "id": 1773269645730,
+      "fecha": "11/3/2026, 5:54:05 p. m.",
+      "monto": 100000,
+      "categoria": "Mantenimiento",
+      "concepto": "si",
+      "usuario": "Administrador"
+    },
+    {
+      "id": 1773269707301,
+      "fecha": "11/3/2026, 5:55:07 p. m.",
+      "monto": 1000000,
+      "categoria": "Panadería",
+      "concepto": "Queso Crema",
+      "usuario": "Trabajador"
+    }
+  ],
+  "presupuesto": 500
+}

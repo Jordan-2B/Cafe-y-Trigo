@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Café & Trigo - Gestión Profesional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: #fdfaf7; font-family: sans-serif; }
+        .bg-coffee { background-color: #3d2b1f; }
+        .text-coffee { color: #3d2b1f; }
+        /* Animación suave para entrar */
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="section-login" class="fixed inset-0 z-50 flex items-center justify-center bg-coffee">
+        <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md text-center mx-4">
+            <h1 class="text-3xl font-black mb-2 italic text-coffee tracking-tighter">CAFÉ & TRIGO</h1>
+            <p class="text-gray-400 text-[10px] uppercase tracking-[0.3em] mb-8 font-bold">Sistema de Suministros</p>
+            <div class="space-y-4">
+                <button type="button" onclick="acceder('Administrador')" class="w-full py-4 bg-amber-700 text-white rounded-2xl font-bold hover:bg-amber-800 transition shadow-lg active:scale-95">Acceso Administrador</button>
+                <button type="button" onclick="acceder('Trabajador')" class="w-full py-4 bg-stone-100 text-stone-600 rounded-2xl font-bold hover:bg-stone-200 transition active:scale-95">Acceso Trabajador</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-app" style="display: none;" class="min-h-screen flex flex-col fade-in">
+        <header class="bg-coffee text-white p-6 shadow-xl">
+            <div class="max-w-7xl mx-auto flex justify-between items-center w-full">
+                <div>
+                    <h2 class="text-2xl font-black italic tracking-tighter">CAFÉ & TRIGO</h2>
+                    <p id="display-user" class="text-amber-400 text-[10px] font-black uppercase mt-1 tracking-widest"></p>
+                </div>
+                <div class="flex items-center gap-8">
+                    <div class="text-right border-r border-white/10 pr-8">
+                        <p class="text-[9px] uppercase opacity-50 font-bold tracking-widest">Gasto Total</p>
+                        <p class="text-3xl font-black text-amber-500 leading-none">$<span id="val-total">0.00</span></p>
+                    </div>
+                    <button onclick="location.reload()" class="text-[10px] font-black bg-red-500/10 text-red-400 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition uppercase">Salir</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <aside class="lg:col-span-4 space-y-6">
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100">
+                    <h3 class="text-lg font-black text-coffee mb-6 flex items-center gap-2">
+                        <span class="bg-amber-100 p-2 rounded-lg text-sm">📝</span> Nuevo Registro
+                    </h3>
+                    <div class="space-y-4">
+                        <input type="number" id="in-monto" placeholder="0.00" class="w-full p-4 bg-stone-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-600 font-black text-xl text-coffee">
+                        <select id="in-cat" class="w-full p-4 bg-stone-50 rounded-2xl outline-none font-bold text-gray-600">
+                            <option value="Granos">Granos y Café</option>
+                            <option value="Panadería">Harinas y Panadería</option>
+                            <option value="Lácteos">Lácteos y Bebidas</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                        </select>
+                        <textarea id="in-concepto" placeholder="¿Qué se compró?" class="w-full p-4 bg-stone-50 rounded-2xl outline-none text-sm font-medium" rows="3"></textarea>
+                        
+                        <button type="button" onclick="guardarGasto(event)" class="w-full py-4 bg-coffee text-white rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95">
+                            Confirmar Registro
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100">
+                    <p class="text-[10px] font-black text-gray-400 uppercase mb-6 text-center tracking-widest">Distribución de Gastos</p>
+                    <canvas id="chartInsumos" style="max-height: 240px;"></canvas>
+                </div>
+            </aside>
+
+            <section class="lg:col-span-8">
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100 min-h-full">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                        <h3 class="font-black uppercase text-gray-400 text-[10px] tracking-[0.3em]">Historial de Caja</h3>
+                        <button onclick="exportarExcel()" class="bg-green-600 text-white px-6 py-3 rounded-full font-black text-[10px] hover:bg-green-700 transition uppercase shadow-lg tracking-widest">Exportar Excel</button>
+                    </div>
+                    <div id="lista-gastos" class="space-y-4 max-h-[650px] overflow-y-auto pr-2">
+                        </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let userProfile = "";
+        let chartObj = null;
+        const API_URL = "http://localhost:3000/api";
+
+        // 1. LOGIN SIN RECARGA
+        function acceder(rol) {
+            userProfile = rol;
+            document.getElementById('section-login').style.display = 'none';
+            document.getElementById('section-app').style.display = 'flex';
+            document.getElementById('display-user').innerText = `Operador: ${rol}`;
+            actualizarTodo();
+        }
+
+        // 2. GUARDAR GASTO (CON PREVENT DEFAULT EXPLÍCITO)
+        async function guardarGasto(e) {
+            if(e) e.preventDefault(); // Detiene cualquier intento de recarga
+
+            const monto = document.getElementById('in-monto').value;
+            const categoria = document.getElementById('in-cat').value;
+            const concepto = document.getElementById('in-concepto').value;
+
+            if(!monto || !concepto) return alert("Datos incompletos.");
+
+            try {
+                const res = await fetch(`${API_URL}/gastos`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ monto, categoria, concepto, usuario: userProfile })
+                });
+
+                if(res.ok) {
+                    document.getElementById('in-monto').value = '';
+                    document.getElementById('in-concepto').value = '';
+                    // RE-RENDERIZAR SIN SALIR DE LA VISTA
+                    actualizarTodo();
+                }
+            } catch (err) { alert("Error al conectar con el servidor."); }
+        }
+
+        async function actualizarTodo() {
+            try {
+                const res = await fetch(`${API_URL}/data`);
+                const data = await res.json();
+
+                document.getElementById('val-total').innerText = data.total;
+
+                // Lista de Gastos
+                const contenedor = document.getElementById('lista-gastos');
+                contenedor.innerHTML = data.gastos.map(g => `
+                    <div class="flex justify-between items-center p-5 bg-stone-50 rounded-2xl border border-stone-100 hover:bg-white transition-all shadow-sm">
+                        <div>
+                            <span class="text-[8px] bg-coffee text-white px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">${g.categoria}</span>
+                            <p class="text-sm font-black text-gray-800 mt-1">${g.concept || g.concepto}</p>
+                            <p class="text-[9px] text-gray-400 font-bold mt-1 uppercase italic">${g.fecha} | POR: ${g.usuario}</p>
+                        </div>
+                        <div class="text-xl font-black text-coffee">-$${parseFloat(g.monto).toFixed(2)}</div>
+                    </div>
+                `).reverse().join('');
+
+                actualizarGrafica(data.gastos);
+            } catch (e) { console.error("Error al refrescar"); }
+        }
+
+        function actualizarGrafica(gastos) {
+            const ctx = document.getElementById('chartInsumos').getContext('2d');
+            const dataMap = {};
+            gastos.forEach(g => dataMap[g.categoria] = (dataMap[g.categoria] || 0) + parseFloat(g.monto));
+
+            if(chartObj) chartObj.destroy();
+
+            chartObj = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(dataMap),
+                    datasets: [{
+                        data: Object.values(dataMap),
+                        // PALETA DE COLORES CAFÉ & TRIGO
+                        backgroundColor: [
+                            '#3d2b1f', // Café Oscuro (Granos)
+                            '#8b5e3c', // Café Medio (Panadería)
+                            '#d2b48c', // Canela/Crema (Lácteos)
+                            '#f5e6d3'  // Trigo Claro (Mantenimiento)
+                        ],
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { font: { size: 10, weight: 'bold' }, color: '#3d2b1f' } }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        async function exportarExcel() {
+            const res = await fetch(`${API_URL}/data`);
+            const data = await res.json();
+            let csv = "\ufeffID,Fecha,Categoria,Concepto,Monto,Usuario\n";
+            data.gastos.forEach(g => {
+                csv += `${g.id},${g.fecha},${g.categoria},"${g.concepto}",${g.monto},${g.usuario}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Reporte_Gastos_${new Date().toLocaleDateString()}.csv`;
+            link.click();
+        }
+    </script>
+</body>
+</html>
