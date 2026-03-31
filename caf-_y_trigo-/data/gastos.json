@@ -17,14 +17,6 @@
       "usuario": "Administrador"
     },
     {
-      "id": 1773269109606,
-      "fecha": "11/3/2026, 5:45:09 p. m.",
-      "monto": 10000000,
-      "categoria": "Lácteos",
-      "concepto": "leche ",
-      "usuario": "Administrador"
-    },
-    {
       "id": 1773269221540,
       "fecha": "11/3/2026, 5:47:01 p. m.",
       "monto": 1000000,
@@ -55,7 +47,40 @@
       "categoria": "Panadería",
       "concepto": "Queso Crema",
       "usuario": "Trabajador"
+    },
+    {
+      "id": 1774886575903,
+      "fecha": "30/3/2026, 11:02:55 a. m.",
+      "monto": 4.5,
+      "categoria": "Lácteos",
+      "concepto": "Leche Alpina",
+      "usuario": "Juan López"
+    },
+    {
+      "id": 1774918497385,
+      "fecha": "30/3/2026, 7:54:57 p. m.",
+      "monto": 5,
+      "categoria": "Panadería",
+      "concepto": "Pan Costeño",
+      "usuario": "2B (2nd YoRHa No. 2 Type B)"
+    },
+    {
+      "id": 1774918525306,
+      "fecha": "30/3/2026, 7:55:25 p. m.",
+      "monto": 5,
+      "categoria": "Granos",
+      "concepto": "Cafe de Tienda",
+      "usuario": "2B (2nd YoRHa No. 2 Type B)"
+    },
+    {
+      "id": 1774993652317,
+      "fecha": "31/3/2026, 4:47:32 p. m.",
+      "monto": 10,
+      "categoria": "Granos",
+      "concepto": "Pan",
+      "usuario": "2B (2nd YoRHa No. 2 Type B)"
     }
   ],
-  "presupuesto": 500
+  "presupuesto": 500,
+  "categorias": []
 }

@@ -2,200 +2,563 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Café & Trigo - Gestión Profesional</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { background: #fdfaf7; font-family: sans-serif; }
-        .bg-coffee { background-color: #3d2b1f; }
-        .text-coffee { color: #3d2b1f; }
-        /* Animación suave para entrar */
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+    <link rel="stylesheet" href="/index.css">
 </head>
 <body>
 
-    <div id="section-login" class="fixed inset-0 z-50 flex items-center justify-center bg-coffee">
-        <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md text-center mx-4">
-            <h1 class="text-3xl font-black mb-2 italic text-coffee tracking-tighter">CAFÉ & TRIGO</h1>
-            <p class="text-gray-400 text-[10px] uppercase tracking-[0.3em] mb-8 font-bold">Sistema de Suministros</p>
-            <div class="space-y-4">
-                <button type="button" onclick="acceder('Administrador')" class="w-full py-4 bg-amber-700 text-white rounded-2xl font-bold hover:bg-amber-800 transition shadow-lg active:scale-95">Acceso Administrador</button>
-                <button type="button" onclick="acceder('Trabajador')" class="w-full py-4 bg-stone-100 text-stone-600 rounded-2xl font-bold hover:bg-stone-200 transition active:scale-95">Acceso Trabajador</button>
+<!-- ═══════════════════  LOGIN  ══════════════════════════════ -->
+<div id="section-login" class="fixed inset-0 z-50 flex items-center justify-center bg-coffee">
+    <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md mx-4">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-black italic text-coffee tracking-tighter mb-1">CAFÉ &amp; TRIGO</h1>
+            <p class="text-gray-400 text-[10px] uppercase tracking-[0.3em] font-bold">Sistema de Suministros</p>
+        </div>
+
+        <div id="login-error" role="alert"></div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1"
+                       for="in-usuario">Usuario</label>
+                <input type="text" id="in-usuario" placeholder="Ej: admin"
+                    class="w-full p-4 bg-stone-50 rounded-2xl outline-none
+                           focus:ring-2 focus:ring-amber-600 font-bold text-coffee">
+            </div>
+            <div>
+                <label class="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1"
+                       for="in-password">Contraseña</label>
+                <input type="password" id="in-password" placeholder="••••••••"
+                    class="w-full p-4 bg-stone-50 rounded-2xl outline-none
+                           focus:ring-2 focus:ring-amber-600 font-bold text-coffee">
+            </div>
+            <button id="btn-login"
+                class="w-full py-4 bg-amber-700 text-white rounded-2xl font-bold
+                       hover:bg-amber-800 transition shadow-lg active:scale-95">
+                Ingresar al sistema
+            </button>
+        </div>
+        <p class="text-center text-[9px] text-gray-300 font-bold mt-5">
+            admin / admin123 &nbsp;·&nbsp; trabajador1 / pass123
+        </p>
+    </div>
+</div>
+
+<!-- ═══════════════════  APP  ════════════════════════════════ -->
+<div id="section-app" style="display:none;" class="min-h-screen flex flex-col fade-in">
+
+    <!-- Header -->
+    <header class="bg-coffee text-white p-5 shadow-xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center w-full gap-4 flex-wrap">
+            <div>
+                <h2 class="text-2xl font-black italic tracking-tighter">CAFÉ &amp; TRIGO</h2>
+                <p id="display-user"
+                   class="text-amber-400 text-[10px] font-black uppercase mt-1 tracking-widest"></p>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap justify-end">
+                <!-- Total (solo admin) -->
+                <div id="header-total" style="display:none;"
+                     class="text-right border-r border-white/10 pr-6">
+                    <p class="text-[9px] uppercase opacity-50 font-bold tracking-widest">Gasto Total</p>
+                    <p class="text-3xl font-black text-amber-500 leading-none">
+                        $<span id="val-total">0</span>
+                    </p>
+                </div>
+                <!-- Tabs de navegación -->
+                <nav id="nav-tabs" class="flex gap-1"></nav>
+                <!-- Salir -->
+                <button id="btn-logout"
+                    class="text-[10px] font-black bg-red-500/10 text-red-400 px-4 py-2
+                           rounded-xl hover:bg-red-500 hover:text-white transition uppercase">
+                    Salir
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ─── PANEL: GASTOS ─────────────────────────────────── -->
+    <div id="panel-gastos"
+         class="tab-panel flex-grow p-6 max-w-7xl mx-auto w-full
+                grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <aside class="lg:col-span-4 space-y-6">
+
+            <!-- Formulario nuevo gasto -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100">
+                <h3 class="text-lg font-black text-coffee mb-6 flex items-center gap-2">
+                    <span class="bg-amber-100 p-2 rounded-lg text-sm">📝</span> Nuevo Registro
+                </h3>
+                <div class="space-y-4">
+                    <input type="number" id="in-monto" placeholder="0.00"
+                        class="w-full p-4 bg-stone-50 rounded-2xl outline-none
+                               focus:ring-2 focus:ring-amber-600 font-black text-xl text-coffee">
+                    <select id="in-cat"
+                        class="w-full p-4 bg-stone-50 rounded-2xl outline-none font-bold text-gray-600">
+                    </select>
+                    <textarea id="in-concepto" placeholder="¿Qué se compró?"
+                        class="w-full p-4 bg-stone-50 rounded-2xl outline-none text-sm font-medium"
+                        rows="3"></textarea>
+                    <p id="gasto-error" class="text-red-500 text-xs font-bold hidden"></p>
+                    <button id="btn-guardar"
+                        class="w-full py-4 bg-coffee text-white rounded-2xl font-black
+                               uppercase tracking-widest shadow-xl hover:bg-black
+                               transition-all active:scale-95">
+                        Confirmar Registro
+                    </button>
+                </div>
+            </div>
+
+            <!-- Gráfica distribución -->
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100">
+                <p class="text-[10px] font-black text-gray-400 uppercase mb-4 text-center tracking-widest">
+                    Distribución de Gastos
+                </p>
+                <canvas id="chartPrincipal" style="max-height:240px;"></canvas>
+            </div>
+        </aside>
+
+        <!-- Historial -->
+        <section class="lg:col-span-8">
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100 min-h-full">
+                <div class="flex justify-between items-center mb-8 gap-4 flex-wrap">
+                    <h3 id="titulo-historial"
+                        class="font-black uppercase text-gray-400 text-[10px] tracking-[0.3em]">
+                        Historial de Caja
+                    </h3>
+                    <button id="btn-excel" style="display:none;"
+                        class="bg-green-600 text-white px-6 py-3 rounded-full font-black
+                               text-[10px] hover:bg-green-700 transition uppercase shadow-lg tracking-widest">
+                        Exportar CSV
+                    </button>
+                </div>
+                <div id="lista-gastos" class="historial-lista"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ─── PANEL: REPORTES (admin) ──────────────────────── -->
+    <div id="panel-reportes" class="tab-panel p-6 max-w-7xl mx-auto w-full">
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-card__label">Total Gastado</span>
+                <p class="stat-card__val">$<span id="stat-total">0</span></p>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card__label">Registros</span>
+                <p class="stat-card__val"><span id="stat-registros">0</span></p>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card__label">Mayor Categoría</span>
+                <p class="stat-card__val" style="font-size:1rem;" id="stat-cat">—</p>
+            </div>
+            <div class="stat-card">
+                <span class="stat-card__label">Mayor Gasto</span>
+                <p class="stat-card__val" style="font-size:1rem;" id="stat-user">—</p>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="bg-white p-7 rounded-[2rem] shadow-sm border border-stone-100">
+                <p class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">Por Categoría</p>
+                <canvas id="chartCat" style="max-height:280px;"></canvas>
+            </div>
+            <div class="bg-white p-7 rounded-[2rem] shadow-sm border border-stone-100">
+                <p class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">Por Usuario</p>
+                <canvas id="chartUser" style="max-height:280px;"></canvas>
             </div>
         </div>
     </div>
 
-    <div id="section-app" style="display: none;" class="min-h-screen flex flex-col fade-in">
-        <header class="bg-coffee text-white p-6 shadow-xl">
-            <div class="max-w-7xl mx-auto flex justify-between items-center w-full">
-                <div>
-                    <h2 class="text-2xl font-black italic tracking-tighter">CAFÉ & TRIGO</h2>
-                    <p id="display-user" class="text-amber-400 text-[10px] font-black uppercase mt-1 tracking-widest"></p>
+    <!-- ─── PANEL: CATEGORÍAS (admin) ────────────────────── -->
+    <div id="panel-categorias" class="tab-panel p-6 max-w-7xl mx-auto w-full">
+        <div class="max-w-xl mx-auto space-y-6">
+
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100">
+                <h3 class="text-lg font-black text-coffee mb-5 flex items-center gap-2">
+                    <span class="bg-amber-100 p-2 rounded-lg text-sm">🏷️</span> Nueva Categoría
+                </h3>
+                <div class="flex gap-3">
+                    <input type="text" id="in-nueva-cat" placeholder="Ej: Empaques"
+                        class="flex-1 p-4 bg-stone-50 rounded-2xl outline-none
+                               focus:ring-2 focus:ring-amber-600 font-bold text-coffee">
+                    <button id="btn-agregar-cat"
+                        class="px-6 py-4 bg-coffee text-white rounded-2xl font-black
+                               hover:bg-black transition active:scale-95 whitespace-nowrap">
+                        + Agregar
+                    </button>
                 </div>
-                <div class="flex items-center gap-8">
-                    <div class="text-right border-r border-white/10 pr-8">
-                        <p class="text-[9px] uppercase opacity-50 font-bold tracking-widest">Gasto Total</p>
-                        <p class="text-3xl font-black text-amber-500 leading-none">$<span id="val-total">0.00</span></p>
-                    </div>
-                    <button onclick="location.reload()" class="text-[10px] font-black bg-red-500/10 text-red-400 px-4 py-2 rounded-xl hover:bg-red-500 hover:text-white transition uppercase">Salir</button>
+                <p id="cat-error" class="text-red-500 text-xs font-bold mt-2 hidden"></p>
+            </div>
+
+            <div class="bg-white p-7 rounded-[2.5rem] shadow-sm border border-stone-100">
+                <p class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">
+                    Predeterminadas (solo lectura)
+                </p>
+                <div class="flex flex-wrap gap-2">
+                    <span class="cat-pill-default">Granos</span>
+                    <span class="cat-pill-default">Panadería</span>
+                    <span class="cat-pill-default">Lácteos</span>
+                    <span class="cat-pill-default">Mantenimiento</span>
+                    <span class="cat-pill-default">Servicios</span>
                 </div>
             </div>
-        </header>
 
-        <main class="flex-grow p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <aside class="lg:col-span-4 space-y-6">
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100">
-                    <h3 class="text-lg font-black text-coffee mb-6 flex items-center gap-2">
-                        <span class="bg-amber-100 p-2 rounded-lg text-sm">📝</span> Nuevo Registro
-                    </h3>
-                    <div class="space-y-4">
-                        <input type="number" id="in-monto" placeholder="0.00" class="w-full p-4 bg-stone-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-600 font-black text-xl text-coffee">
-                        <select id="in-cat" class="w-full p-4 bg-stone-50 rounded-2xl outline-none font-bold text-gray-600">
-                            <option value="Granos">Granos y Café</option>
-                            <option value="Panadería">Harinas y Panadería</option>
-                            <option value="Lácteos">Lácteos y Bebidas</option>
-                            <option value="Mantenimiento">Mantenimiento</option>
-                        </select>
-                        <textarea id="in-concepto" placeholder="¿Qué se compró?" class="w-full p-4 bg-stone-50 rounded-2xl outline-none text-sm font-medium" rows="3"></textarea>
-                        
-                        <button type="button" onclick="guardarGasto(event)" class="w-full py-4 bg-coffee text-white rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-black transition-all active:scale-95">
-                            Confirmar Registro
-                        </button>
-                    </div>
+            <div class="bg-white p-7 rounded-[2.5rem] shadow-sm border border-stone-100">
+                <p class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">
+                    Personalizadas
+                </p>
+                <div id="lista-categorias" class="space-y-3">
+                    <p class="historial-vacio">Sin categorías personalizadas</p>
                 </div>
-
-                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-stone-100">
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-6 text-center tracking-widest">Distribución de Gastos</p>
-                    <canvas id="chartInsumos" style="max-height: 240px;"></canvas>
-                </div>
-            </aside>
-
-            <section class="lg:col-span-8">
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-stone-100 min-h-full">
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-                        <h3 class="font-black uppercase text-gray-400 text-[10px] tracking-[0.3em]">Historial de Caja</h3>
-                        <button onclick="exportarExcel()" class="bg-green-600 text-white px-6 py-3 rounded-full font-black text-[10px] hover:bg-green-700 transition uppercase shadow-lg tracking-widest">Exportar Excel</button>
-                    </div>
-                    <div id="lista-gastos" class="space-y-4 max-h-[650px] overflow-y-auto pr-2">
-                        </div>
-                </div>
-            </section>
-        </main>
+            </div>
+        </div>
     </div>
 
-    <script>
-        let userProfile = "";
-        let chartObj = null;
-        const API_URL = "http://localhost:3000/api";
+</div><!-- fin section-app -->
 
-        // 1. LOGIN SIN RECARGA
-        function acceder(rol) {
-            userProfile = rol;
-            document.getElementById('section-login').style.display = 'none';
-            document.getElementById('section-app').style.display = 'flex';
-            document.getElementById('display-user').innerText = `Operador: ${rol}`;
-            actualizarTodo();
+<script>
+/* ============================================================
+   ESTADO GLOBAL
+   ============================================================ */
+const API    = 'http://localhost:3000/api';
+let sesion   = null;
+let chartPrincipal = null, chartCat = null, chartUser = null;
+const PALETA = ['#3d2b1f','#8b5e3c','#d2b48c','#f5e6d3','#a0522d','#deb887'];
+
+const hdrs = () => ({
+    'Content-Type': 'application/json',
+    'x-token': sesion?.token || ''
+});
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+async function iniciarSesion() {
+    const usuario  = document.getElementById('in-usuario').value.trim();
+    const password = document.getElementById('in-password').value;
+    const errEl    = document.getElementById('login-error');
+    errEl.classList.remove('visible');
+
+    if (!usuario || !password) {
+        errEl.textContent = 'Ingresa usuario y contraseña.';
+        errEl.classList.add('visible');
+        return;
+    }
+    try {
+        const res = await fetch(`${API}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario, password })
+        });
+        if (!res.ok) {
+            errEl.textContent = 'Usuario o contraseña incorrectos.';
+            errEl.classList.add('visible');
+            return;
         }
+        sesion = await res.json();
+        document.getElementById('section-login').style.display = 'none';
+        document.getElementById('section-app').style.display   = 'flex';
+        configurarUI();
+        actualizarGastos();
+    } catch {
+        errEl.textContent = 'No se pudo conectar al servidor.';
+        errEl.classList.add('visible');
+    }
+}
 
-        // 2. GUARDAR GASTO (CON PREVENT DEFAULT EXPLÍCITO)
-        async function guardarGasto(e) {
-            if(e) e.preventDefault(); // Detiene cualquier intento de recarga
+async function cerrarSesion() {
+    try { await fetch(`${API}/logout`, { method: 'POST', headers: hdrs() }); } catch {}
+    sesion = null;
+    location.reload();
+}
 
-            const monto = document.getElementById('in-monto').value;
-            const categoria = document.getElementById('in-cat').value;
-            const concepto = document.getElementById('in-concepto').value;
+/* ============================================================
+   CONFIGURAR UI SEGÚN ROL
+   ============================================================ */
+function configurarUI() {
+    const esAdmin = sesion.rol === 'Administrador';
 
-            if(!monto || !concepto) return alert("Datos incompletos.");
+    document.getElementById('display-user').textContent = `${sesion.rol}: ${sesion.nombre}`;
 
-            try {
-                const res = await fetch(`${API_URL}/gastos`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ monto, categoria, concepto, usuario: userProfile })
-                });
+    if (esAdmin) {
+        document.getElementById('header-total').style.display   = '';
+        document.getElementById('btn-excel').style.display      = '';
+        document.getElementById('titulo-historial').textContent = 'Historial de Caja';
+    } else {
+        document.getElementById('titulo-historial').textContent = 'Mis Gastos';
+    }
 
-                if(res.ok) {
-                    document.getElementById('in-monto').value = '';
-                    document.getElementById('in-concepto').value = '';
-                    // RE-RENDERIZAR SIN SALIR DE LA VISTA
-                    actualizarTodo();
+    const tabs = [{ id: 'gastos', label: '📋 Gastos' }];
+    if (esAdmin) {
+        tabs.push({ id: 'reportes',   label: '📊 Reportes'    });
+        tabs.push({ id: 'categorias', label: '🏷️ Categorías' });
+    }
+
+    const nav = document.getElementById('nav-tabs');
+    nav.innerHTML = tabs.map(t =>
+        `<button class="nav-tab" data-tab="${t.id}">${t.label}</button>`
+    ).join('');
+    nav.querySelectorAll('.nav-tab').forEach(b =>
+        b.addEventListener('click', () => cambiarTab(b.dataset.tab))
+    );
+
+    cambiarTab('gastos');
+}
+
+function cambiarTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById(`panel-${id}`);
+    const boton = document.querySelector(`[data-tab="${id}"]`);
+    if (panel) panel.classList.add('active');
+    if (boton) boton.classList.add('active');
+    if (id === 'reportes')   cargarReportes();
+    if (id === 'categorias') cargarCategorias();
+}
+
+/* ============================================================
+   GASTOS
+   ============================================================ */
+async function actualizarGastos() {
+    try {
+        const data = await (await fetch(`${API}/data`, { headers: hdrs() })).json();
+        if (sesion.rol === 'Administrador')
+            document.getElementById('val-total').textContent =
+                Number(data.total).toLocaleString('es-CO');
+        poblarSelect(data.categorias);
+        renderizarGastos(data.gastos);
+        renderChartPrincipal(data.gastos);
+    } catch (e) { console.error('Error al cargar gastos:', e); }
+}
+
+function poblarSelect(categorias) {
+    document.getElementById('in-cat').innerHTML =
+        categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function renderizarGastos(gastos) {
+    const lista   = document.getElementById('lista-gastos');
+    const esAdmin = sesion.rol === 'Administrador';
+
+    if (!gastos.length) {
+        lista.innerHTML = `<p class="historial-vacio">Sin registros aún</p>`;
+        return;
+    }
+    lista.innerHTML = [...gastos].reverse().map(g => `
+        <div class="gasto-item fade-in">
+            <div class="gasto-item__info">
+                <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-bottom:3px;">
+                    <span class="cat-badge">${g.categoria}</span>
+                    ${esAdmin ? `<span class="user-badge">${g.usuario}</span>` : ''}
+                </div>
+                <p class="gasto-item__concepto">${g.concepto}</p>
+                <p class="gasto-item__fecha">${g.fecha}</p>
+            </div>
+            <div class="gasto-item__right">
+                <span class="gasto-item__monto">-$${Number(g.monto).toLocaleString('es-CO')}</span>
+                ${esAdmin
+                    ? `<button class="btn-eliminar" data-id="${g.id}" title="Eliminar">✕</button>`
+                    : ''}
+            </div>
+        </div>
+    `).join('');
+
+    lista.querySelectorAll('.btn-eliminar').forEach(btn =>
+        btn.addEventListener('click', () => eliminarGasto(Number(btn.dataset.id)))
+    );
+}
+
+async function guardarGasto() {
+    const monto    = document.getElementById('in-monto').value;
+    const categoria= document.getElementById('in-cat').value;
+    const concepto = document.getElementById('in-concepto').value.trim();
+    const errEl    = document.getElementById('gasto-error');
+    errEl.classList.add('hidden');
+
+    if (!monto || Number(monto) <= 0) {
+        errEl.textContent = 'Ingresa un monto válido.'; errEl.classList.remove('hidden'); return;
+    }
+    if (!concepto) {
+        errEl.textContent = 'El concepto es requerido.'; errEl.classList.remove('hidden'); return;
+    }
+    try {
+        const res = await fetch(`${API}/gastos`, {
+            method: 'POST', headers: hdrs(),
+            body: JSON.stringify({ monto, categoria, concepto })
+        });
+        if (res.ok) {
+            document.getElementById('in-monto').value    = '';
+            document.getElementById('in-concepto').value = '';
+            actualizarGastos();
+        }
+    } catch { alert('Error al conectar con el servidor.'); }
+}
+
+async function eliminarGasto(id) {
+    if (!confirm('¿Eliminar este registro? No se puede deshacer.')) return;
+    try {
+        const res = await fetch(`${API}/gastos/${id}`, { method: 'DELETE', headers: hdrs() });
+        if (res.ok) actualizarGastos();
+        else { const e = await res.json(); alert(e.error); }
+    } catch { alert('Error de conexión.'); }
+}
+
+async function exportarCSV() {
+    const data = await (await fetch(`${API}/data`, { headers: hdrs() })).json();
+    let csv = '\ufeffID,Fecha,Categoría,Concepto,Monto,Usuario\n';
+    data.gastos.forEach(g =>
+        csv += `${g.id},"${g.fecha}","${g.categoria}","${g.concepto}",${g.monto},"${g.usuario}"\n`
+    );
+    const link = document.createElement('a');
+    link.href     = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    link.download = `Reporte_${new Date().toLocaleDateString('es-CO')}.csv`;
+    link.click();
+}
+
+/* ============================================================
+   GRÁFICA PRINCIPAL
+   ============================================================ */
+function renderChartPrincipal(gastos) {
+    const mapa = {};
+    gastos.forEach(g => mapa[g.categoria] = (mapa[g.categoria] || 0) + parseFloat(g.monto));
+    if (chartPrincipal) chartPrincipal.destroy();
+    if (!Object.keys(mapa).length) return;
+    chartPrincipal = new Chart(document.getElementById('chartPrincipal').getContext('2d'), {
+        type: 'doughnut',
+        data: { labels: Object.keys(mapa),
+                datasets: [{ data: Object.values(mapa), backgroundColor: PALETA,
+                             borderWidth: 3, borderColor: '#fff' }] },
+        options: { plugins: { legend: { position: 'bottom',
+            labels: { font: { size: 10, weight: 'bold' }, color: '#3d2b1f' } } },
+            cutout: '70%' }
+    });
+}
+
+/* ============================================================
+   REPORTES (admin)
+   ============================================================ */
+async function cargarReportes() {
+    try {
+        const stats       = await (await fetch(`${API}/stats`, { headers: hdrs() })).json();
+        const catEntries  = Object.entries(stats.porCategoria || {}).sort((a,b) => b[1]-a[1]);
+        const userEntries = Object.entries(stats.porUsuario   || {}).sort((a,b) => b[1]-a[1]);
+
+        document.getElementById('stat-total').textContent     = Number(stats.total).toLocaleString('es-CO');
+        document.getElementById('stat-registros').textContent = stats.totalRegistros ?? 0;
+        document.getElementById('stat-cat').textContent       = catEntries[0]?.[0]  ?? '—';
+        document.getElementById('stat-user').textContent      = userEntries[0]?.[0] ?? '—';
+
+        if (chartCat) chartCat.destroy();
+        chartCat = new Chart(document.getElementById('chartCat').getContext('2d'), {
+            type: 'doughnut',
+            data: { labels: catEntries.map(e=>e[0]),
+                    datasets: [{ data: catEntries.map(e=>e[1]), backgroundColor: PALETA,
+                                 borderWidth: 3, borderColor: '#fff' }] },
+            options: { plugins: { legend: { position: 'bottom',
+                labels: { font: { size: 10, weight: 'bold' }, color: '#3d2b1f' } } },
+                cutout: '65%' }
+        });
+
+        if (chartUser) chartUser.destroy();
+        chartUser = new Chart(document.getElementById('chartUser').getContext('2d'), {
+            type: 'bar',
+            data: { labels: userEntries.map(e=>e[0]),
+                    datasets: [{ label: 'Total ($)', data: userEntries.map(e=>e[1]),
+                        backgroundColor: '#8b5e3c', hoverBackgroundColor: '#3d2b1f',
+                        borderRadius: 10, borderSkipped: false }] },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { ticks: { callback: v=>`$${Number(v).toLocaleString('es-CO')}`,
+                                  font: { size: 9 } }, grid: { color: '#f5f5f4' } },
+                    x: { ticks: { font: { size: 10, weight: 'bold' } }, grid: { display: false } }
                 }
-            } catch (err) { alert("Error al conectar con el servidor."); }
-        }
+            }
+        });
+    } catch (e) { console.error('Error reportes:', e); }
+}
 
-        async function actualizarTodo() {
-            try {
-                const res = await fetch(`${API_URL}/data`);
-                const data = await res.json();
+/* ============================================================
+   CATEGORÍAS (admin)
+   ============================================================ */
+async function cargarCategorias() {
+    try {
+        const data = await (await fetch(`${API}/categorias`, { headers: hdrs() })).json();
+        renderizarCategorias(data.categorias);
+    } catch {}
+}
 
-                document.getElementById('val-total').innerText = data.total;
+function renderizarCategorias(cats) {
+    const lista = document.getElementById('lista-categorias');
+    if (!cats || !cats.length) {
+        lista.innerHTML = `<p class="historial-vacio">Sin categorías personalizadas</p>`;
+        return;
+    }
+    lista.innerHTML = cats.map(c => `
+        <div class="cat-item fade-in">
+            <span class="cat-item__nombre">🏷️ ${c}</span>
+            <button data-nombre="${c}"
+                class="text-[9px] font-black bg-red-50 text-red-400 px-3 py-1.5
+                       rounded-xl hover:bg-red-500 hover:text-white transition">
+                Eliminar
+            </button>
+        </div>
+    `).join('');
+    lista.querySelectorAll('[data-nombre]').forEach(btn =>
+        btn.addEventListener('click', () => eliminarCategoria(btn.dataset.nombre))
+    );
+}
 
-                // Lista de Gastos
-                const contenedor = document.getElementById('lista-gastos');
-                contenedor.innerHTML = data.gastos.map(g => `
-                    <div class="flex justify-between items-center p-5 bg-stone-50 rounded-2xl border border-stone-100 hover:bg-white transition-all shadow-sm">
-                        <div>
-                            <span class="text-[8px] bg-coffee text-white px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">${g.categoria}</span>
-                            <p class="text-sm font-black text-gray-800 mt-1">${g.concept || g.concepto}</p>
-                            <p class="text-[9px] text-gray-400 font-bold mt-1 uppercase italic">${g.fecha} | POR: ${g.usuario}</p>
-                        </div>
-                        <div class="text-xl font-black text-coffee">-$${parseFloat(g.monto).toFixed(2)}</div>
-                    </div>
-                `).reverse().join('');
+async function agregarCategoria() {
+    const input  = document.getElementById('in-nueva-cat');
+    const errEl  = document.getElementById('cat-error');
+    const nombre = input.value.trim();
+    errEl.classList.add('hidden');
+    if (!nombre) { errEl.textContent = 'Escribe un nombre.'; errEl.classList.remove('hidden'); return; }
+    try {
+        const res = await fetch(`${API}/categorias`, {
+            method: 'POST', headers: hdrs(), body: JSON.stringify({ nombre })
+        });
+        const data = await res.json();
+        if (res.ok) { input.value = ''; renderizarCategorias(data.categorias); actualizarGastos(); }
+        else { errEl.textContent = data.error || 'Error.'; errEl.classList.remove('hidden'); }
+    } catch {}
+}
 
-                actualizarGrafica(data.gastos);
-            } catch (e) { console.error("Error al refrescar"); }
-        }
+async function eliminarCategoria(nombre) {
+    if (!confirm(`¿Eliminar la categoría "${nombre}"?`)) return;
+    try {
+        const res  = await fetch(`${API}/categorias/${encodeURIComponent(nombre)}`,
+                                  { method: 'DELETE', headers: hdrs() });
+        if (res.ok) { const d = await res.json(); renderizarCategorias(d.categorias); actualizarGastos(); }
+    } catch {}
+}
 
-        function actualizarGrafica(gastos) {
-            const ctx = document.getElementById('chartInsumos').getContext('2d');
-            const dataMap = {};
-            gastos.forEach(g => dataMap[g.categoria] = (dataMap[g.categoria] || 0) + parseFloat(g.monto));
-
-            if(chartObj) chartObj.destroy();
-
-            chartObj = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(dataMap),
-                    datasets: [{
-                        data: Object.values(dataMap),
-                        // PALETA DE COLORES CAFÉ & TRIGO
-                        backgroundColor: [
-                            '#3d2b1f', // Café Oscuro (Granos)
-                            '#8b5e3c', // Café Medio (Panadería)
-                            '#d2b48c', // Canela/Crema (Lácteos)
-                            '#f5e6d3'  // Trigo Claro (Mantenimiento)
-                        ],
-                        borderWidth: 3,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { font: { size: 10, weight: 'bold' }, color: '#3d2b1f' } }
-                    },
-                    cutout: '70%'
-                }
-            });
-        }
-
-        async function exportarExcel() {
-            const res = await fetch(`${API_URL}/data`);
-            const data = await res.json();
-            let csv = "\ufeffID,Fecha,Categoria,Concepto,Monto,Usuario\n";
-            data.gastos.forEach(g => {
-                csv += `${g.id},${g.fecha},${g.categoria},"${g.concepto}",${g.monto},${g.usuario}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Reporte_Gastos_${new Date().toLocaleDateString()}.csv`;
-            link.click();
-        }
-    </script>
+/* ============================================================
+   EVENTOS AL CARGAR EL DOM
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btn-login')
+            .addEventListener('click', iniciarSesion);
+    ['in-usuario','in-password'].forEach(id =>
+        document.getElementById(id)
+                .addEventListener('keydown', e => { if (e.key==='Enter') iniciarSesion(); })
+    );
+    document.getElementById('btn-guardar')
+            .addEventListener('click', guardarGasto);
+    document.getElementById('btn-excel')
+            .addEventListener('click', exportarCSV);
+    document.getElementById('btn-logout')
+            .addEventListener('click', cerrarSesion);
+    document.getElementById('btn-agregar-cat')
+            .addEventListener('click', agregarCategoria);
+    document.getElementById('in-nueva-cat')
+            .addEventListener('keydown', e => { if (e.key==='Enter') agregarCategoria(); });
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,26 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "usuario": "admin",
+      "password": "admin123",
+      "rol": "Administrador",
+      "nombre": "Administrador"
+    },
+    {
+      "id": 2,
+      "usuario": "trabajador1",
+      "password": "pass123",
+      "rol": "Trabajador",
+      "nombre": "Juan López"
+    },
+    {
+      "id": 3,
+      "usuario": "Nier",
+      "password": "NierAutomata",
+      "rol": "Trabajador",
+      "nombre": "2B (2nd YoRHa No. 2 Type B)"
+    }
+
+  ]
+}
