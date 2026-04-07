@@ -2,10 +2,10 @@
   "usuarios": [
     {
       "id": 1,
-      "usuario": "admin",
+      "usuario": "admin1",
       "password": "admin123",
       "rol": "Administrador",
-      "nombre": "Administrador"
+      "nombre": "Administrador 1"
     },
     {
       "id": 2,
@@ -15,12 +15,11 @@
       "nombre": "Juan López"
     },
     {
-      "id": 3,
+      "id": 2,
       "usuario": "Nier",
       "password": "NierAutomata",
       "rol": "Trabajador",
-      "nombre": "2B (2nd YoRHa No. 2 Type B)"
+      "nombre": "2B(YoRHa No.2 Type B)"
     }
-
   ]
 }

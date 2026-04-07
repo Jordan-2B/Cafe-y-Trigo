@@ -7,6 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const { leerJSON, guardarJSON, verificarToken,
+    soloAdmin, sesiones, CATS_DEFAULT } = require('./helpers');
+
 // ── Servir archivos estáticos (HTML, CSS del frontend) ─────────────────────
 app.use(express.static(__dirname));
 
@@ -15,39 +18,6 @@ const GASTOS_PATH = './data/gastos.json';
 const USUARIOS_PATH = './data/usuarios.json';
 
 if (!fs.existsSync('./data')) fs.mkdirSync('./data');
-
-// ── Sesiones en memoria: token → { usuario, rol, nombre } ─────────────────
-const sesiones = new Map();
-
-// ── Categorías predeterminadas (no se pueden eliminar) ─────────────────────
-const CATS_DEFAULT = ['Granos', 'Panadería', 'Lácteos', 'Mantenimiento', 'Servicios'];
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-function leerJSON(ruta, defecto) {
-    try {
-        if (!fs.existsSync(ruta)) return defecto;
-        return JSON.parse(fs.readFileSync(ruta, 'utf-8'));
-    } catch { return defecto; }
-}
-function guardarJSON(ruta, data) {
-    fs.writeFileSync(ruta, JSON.stringify(data, null, 2));
-}
-
-// ── Middleware: verifica que el token sea válido ────────────────────────────
-function verificarToken(req, res, next) {
-    const token = req.headers['x-token'];
-    if (!token || !sesiones.has(token))
-        return res.status(401).json({ error: 'No autorizado. Inicia sesión.' });
-    req.sesion = sesiones.get(token);
-    next();
-}
-
-// ── Middleware: solo permite al Administrador ──────────────────────────────
-function soloAdmin(req, res, next) {
-    if (req.sesion.rol !== 'Administrador')
-        return res.status(403).json({ error: 'Solo el administrador puede realizar esta acción.' });
-    next();
-}
 
 // ══════════════════════════════════════════════════════════════════════════
 //  RUTAS API
@@ -192,7 +162,10 @@ app.delete('/api/categorias/:nombre', verificarToken, soloAdmin, (req, res) => {
 });
 
 // ──────────────────────────────────────────────────────────────────────────
-app.listen(3000, () => {
-    console.log('🚀 Café & Trigo corriendo en http://localhost:3000');
-    console.log('👤 admin/admin123  |  trabajador1/pass123');
-});
+if (require.main === module) {
+    app.listen(3000, () => {
+        console.log('🚀 Servidor Café & Trigo corriendo en http://localhost:3000');
+        console.log('👤 Usuarios: admin/admin123 | trabajador1/pass123');
+    });
+}
+module.exports = app;
